@@ -17,7 +17,7 @@ async function importRecords() {
 
     do {
         record = await redis.rpop('records');
-        await elasticsearch.index({ index: 'records', type: 'all', body: record });
+        record && await elasticsearch.index({ index: 'records', type: 'all', body: record });
     } while (record);
 
     await redis.disconnect();
