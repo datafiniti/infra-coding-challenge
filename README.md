@@ -14,6 +14,8 @@ To reiterate, our goal is to get data, in the form of json objects, from point A
   - If you don't already have docker you can download and install it from the following links:
     - [mac](https://www.docker.com/docker-mac)
     - [windows](https://www.docker.com/docker-windows)
+    - [linux](https://runnable.com/docker/install-docker-on-linux)
+  - For those of you on Windows or a Mac: increase the memory allocated to docker to at least 4GB. This setting can be found within docker's preferences. Feel free to reach out if you don't have that much memory available on your machine. Linux users don't need to worry about this because there's no virtual machine running between your host OS and your docker containers.
 
 - Fork this repository, clone it down and cd into it.
 - The repository contains a docker composition that sets up the following docker containers:
@@ -76,7 +78,7 @@ To reiterate, our goal is to get data, in the form of json objects, from point A
 
 ## Cleanup and Submission
 - Once you're done, from within the `coding-challenge` directory, run `./bin/teardown.sh` in order to delete all containers and volumes
-- Create a pull request with your submission and we'll take a look ASAP!
+- Send over an email with a link to your forked repo and we'll take a look ASAP!
 
 ## Hints
 - Speeding up the import rate does not require some fancy algorithm or data strucuture. 
