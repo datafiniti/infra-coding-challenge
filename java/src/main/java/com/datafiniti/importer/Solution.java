@@ -2,12 +2,13 @@ package com.datafiniti.importer;
 
 import redis.clients.jedis.Jedis;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-// activeCount
 
-class InsertThread extends Thread {
+class InsertRunnable implements Runnable {
     String record;
-    InsertThread(String record) {
+    InsertRunnable(String record) {
         this.record = record;
     }
 
@@ -36,11 +37,13 @@ class Solution {
 
         System.out.println("importing records from redis -> elasticsearch");
 
+        ExecutorService pool = Executors.newFixedThreadPool(2000);
+
         String record;
         while ((record = jedis.rpop("records")) != null) {
-            InsertThread i = new InsertThread(record);
-            i.start();
+            pool.execute(new InsertRunnable(record));
         }
+        pool.shutdown();
 
         System.out.println("done importing.");
     }
