@@ -22,6 +22,23 @@ services:
           - elasticsearch
     environment:
       - discovery.type=single-node
+      - cluster.name=myCluster
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+          soft: -1
+          hard: -1
+  es2-dev:
+    container_name: es2-dev
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.0
+    environment:
+      - cluster.name=myCluster
+      - "discovery.zen.ping.unicast.hosts=elasticsearch"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+          soft: -1
+          hard: -1
   kibana-dev:
     container_name: kibana-dev
     image: docker.elastic.co/kibana/kibana:6.4.0
@@ -31,7 +48,6 @@ services:
             - kibana
     ports:
       - "5601:5601"
-
 
 networks:
   devnet:
