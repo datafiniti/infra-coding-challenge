@@ -16,8 +16,8 @@ async function importRecords() {
     let records;
     let i = 99
     do {
-        records = await redis.lrange('records',0, i);
-        redis.ltrim('records', 0, i)
+        records = await redis.lrange('records', i-99, i);
+        redis.ltrim('records', i-99, i)
         for(let record in records){
             await elasticsearch.bulk({index:{ index: 'records', type: 'all'} + '\n'}, {body: record} + '\n');    
         }
