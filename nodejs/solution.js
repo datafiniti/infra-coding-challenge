@@ -13,17 +13,27 @@ async function importRecords() {
     console.log('importing records from redis -> elasticsearch');
     
     const redis = new Redis({ host: 'redis' });
-    let records;
-    let i = 99
-    do {
-        records = await redis.lrange('records', i-99, i);
-        redis.ltrim('records', i-99, i)
-        for(let record in records){
-            await elasticsearch.bulk({index:{ index: 'records', type: 'all'} + '\n'}, {body: record} + '\n');    
-        }
-        i+=99;
-    } while (record);
+    let processed = 0;
+    let len = await redis.llen('records');
+    let pageSize = 200;
 
+    for(let i = 0; i < len; i+=pageSize){
+        let records = await redis.lrange('records', i, (i + pageSize - 1));
+        if (!records.length) {
+            break;
+        }
+        processed += records.length;
+        console.log(processed, 'records processed');
+
+        let recordsToIndex = [];
+        for (let record of records) {
+            recordsToIndex.push({index:{_index: 'records', _type: 'all'}});
+            recordsToIndex.push(record);
+        }
+        await elasticsearch.bulk({body: recordsToIndex});
+    }
+
+    await redis.ltrim(0, -1); // clear out redis
     await redis.disconnect();
 }
 
