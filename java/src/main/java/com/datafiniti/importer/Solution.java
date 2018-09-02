@@ -2,13 +2,14 @@ package com.datafiniti.importer;
 
 import redis.clients.jedis.Jedis;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
 class InsertRunnable implements Runnable {
-    String record;
-    InsertRunnable(String record) {
+    private String record;
+    public InsertRunnable(String record) {
         this.record = record;
     }
 
@@ -17,7 +18,7 @@ class InsertRunnable implements Runnable {
             ESClient.insert(record);
         }
         catch (IOException e) {
-            System.out.println("IOException: " + e);
+            e.printStackTrace();
         }
     }
 }
@@ -27,7 +28,7 @@ class Solution {
         ESClient.connect();
         ESClient.setup();
 
-        seedRedis(10_000);
+        seedRedis(20_000);
 
         importRecords();
     }
@@ -37,15 +38,23 @@ class Solution {
 
         System.out.println("importing records from redis -> elasticsearch");
 
-        ExecutorService pool = Executors.newFixedThreadPool(2000);
+        ExecutorService pool = Executors.newFixedThreadPool(250);
 
-        String record;
-        while ((record = jedis.rpop("records")) != null) {
-            pool.execute(new InsertRunnable(record));
+        while (jedis.llen("records") != 0) {
+            pool.execute(new InsertRunnable(jedis.lpop("records")));
         }
-        pool.shutdown();
 
         System.out.println("done importing.");
+
+        pool.shutdown();
+
+        while (true) {
+            if (pool.isTerminated()) {
+                System.out.println("ThreadPool finished Indexing records");
+                break;
+            }
+        }
+
     }
 
     public static void seedRedis(Integer numRecords) throws IOException {
